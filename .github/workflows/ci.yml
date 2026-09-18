@@ -1,0 +1,36 @@
+name: Tests and Docker
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install uv==0.11.24
+      - run: uv sync --locked
+      - run: uv run ruff check . && uv run ruff format --check .
+      - run: uv run pytest --cov=penguin_lab --cov-branch --cov-fail-under=90 --cov-report=term-missing
+      - name: Verify data snapshot
+        run: sha256sum -c data/SHA256SUMS
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t penguin-lab:ci .
+      - name: Test app inside the built image
+        run: docker run --rm penguin-lab:ci python -c "from streamlit.testing.v1 import AppTest; app = AppTest.from_file('app.py', default_timeout=60).run(); assert not app.exception, str(app.exception)"
+      - name: Start and check container
+        run: |
+          docker run -d --name penguin-lab -p 127.0.0.1:8501:8501 penguin-lab:ci
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8501/_stcore/health; then exit 0; fi
+            sleep 2
+          done
+          docker logs penguin-lab
+          exit 1
+      - if: always()
+        run: docker rm -f penguin-lab || true
