@@ -1,9 +1,12 @@
 # Penguin Lab
 
-An offline-ready Streamlit application exploring Palmer penguin measurements
-and evaluating a reproducible body-mass regression. Prepared as a **new personal
-course project draft**, not presented as a project previously completed in class.
-Review and adapt it before submitting.
+Streamlit application for exploring the Palmer Penguins dataset and predicting
+body mass from physical measurements, species, sex and island. Individual project
+for Tooling for the Data Scientist.
+
+The app has three tabs: data exploration, model evaluation, and data sources and
+methods. The dataset contains 344 observations. It is included in the repository,
+so the application does not need an external data service.
 
 ## Run locally
 
@@ -67,7 +70,7 @@ set. A single split does not measure uncertainty over all possible splits.
 
 ## Limitations
 
-- Only 344 observations from three species, three islands and 2007–2009.
+- Only 344 observations from three species, three islands and 2007 to 2009.
 - Sites and collection conditions are clustered; a random split does not measure
   generalization to new islands or years.
 - Missing sex is imputed with the training mode, potentially weakening subgroup
@@ -84,17 +87,23 @@ set. A single split does not measure uncertainty over all possible splits.
 - `data/`: pinned dataset snapshot, provenance and checksum.
 - `Dockerfile`, `compose.yaml`, `.github/workflows/ci.yml`: reproducible execution.
 
-## Review before submission
+## Course requirements
 
-1. Run the app and explain the data filters, missing-value policy and model split.
-2. Check the CI results and reproduce the tests.
-3. Adapt the text and scope to the work you are comfortable presenting.
-4. Ensure the instructor can read the chosen repository. The assignment accepts
-   HFactory internal GitLab or a public GitHub repo. A private GitHub draft must
-   be made accessible before submitting its URL.
-5. Submit the Git repository URL on HFactory yourself. Registry URL is optional.
+| Requirement | Implementation |
+|---|---|
+| Streamlit app | `app.py`: filters, charts, CSV export and model results |
+| Containerization | `Dockerfile` and `compose.yaml` |
+| Data import and filtering tests | `tests/test_data.py`: valid and invalid input, combined and empty filters |
+| Continuous integration | `.github/workflows/ci.yml`: tests, data checksum, Docker build and container checks |
+| Reproducibility | Python 3.12, `uv.lock`, fixed dataset snapshot and random seed |
+| Documentation | Run instructions, method, limitations and data attribution |
 
-**No final submission has been made.**
+## Results on the fixed test split
+
+The split uses 256 training observations and 86 test observations. Two rows with
+missing body mass are excluded. Rounded results are a model MAE of 249 g, compared
+with 703 g for the mean baseline, and a test R² of 0.865. These results describe
+this split only; they are not an estimate for other penguin populations.
 
 Dataset attribution and CC0 license: see [data/README.md](data/README.md).
 App-testing and container setup follow the official Streamlit documentation:

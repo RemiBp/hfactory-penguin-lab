@@ -1,4 +1,4 @@
-"""Penguin Lab — a reproducible, offline-ready data science application."""
+"""Explore Palmer penguin measurements and evaluate body-mass predictions."""
 
 import altair as alt
 import streamlit as st
@@ -16,9 +16,9 @@ padding:18px;border-radius:12px}
 </style>""",
     unsafe_allow_html=True,
 )
-st.caption("PALMER ARCHIPELAGO  /  FIELD DATA 2007–2009")
+st.caption("Palmer Archipelago, 2007 to 2009")
 st.title("Penguin Lab")
-st.write("Explore the measurements. Test a prediction. See what the data can tell us.")
+st.write("Measurements of 344 penguins from three species, with a model to estimate body mass.")
 
 
 @st.cache_data
@@ -38,7 +38,7 @@ except (OSError, ValueError) as error:
     st.stop()
 
 with st.sidebar:
-    st.header("Explore a population")
+    st.header("Filter observations")
     species = st.multiselect(
         "Species",
         sorted(frame.species.unique()),
@@ -65,14 +65,14 @@ with explorer:
     second.metric("Species represented", selected.species.nunique())
     mean_mass = selected.body_mass_g.mean()
     third.metric(
-        "Mean measured mass", "—" if selected.body_mass_g.count() == 0 else f"{mean_mass:,.0f} g"
+        "Mean measured mass", "N/A" if selected.body_mass_g.count() == 0 else f"{mean_mass:,.0f} g"
     )
     if selected.empty:
         st.info(
             "No observations match these filters. Select at least one species, island and year."
         )
     else:
-        st.subheader("Longer flippers, heavier penguins?")
+        st.subheader("Flipper length and body mass")
         st.caption(
             f"{len(measured)} complete pairs shown; {len(selected) - len(measured)} rows missing a plotted measurement omitted."
         )
@@ -109,12 +109,12 @@ with explorer:
                 .properties(height=390)
                 .interactive()
             )
-            st.altair_chart(chart, use_container_width=True)
+            st.altair_chart(chart, width="stretch")
         st.caption(
             "Association is not causation. Species and sex contribute to the visible groups."
         )
         with st.expander("Inspect the selected rows"):
-            st.dataframe(selected, hide_index=True, use_container_width=True)
+            st.dataframe(selected, hide_index=True, width="stretch")
         st.download_button(
             "Download selected CSV",
             selected.to_csv(index=False),
@@ -146,7 +146,13 @@ with modelling:
         .encode(
             x=alt.X("Measured mass (g):Q", scale=alt.Scale(domain=[low, high], zero=False)),
             y=alt.Y("Predicted mass (g):Q", scale=alt.Scale(domain=[low, high], zero=False)),
-            color="Species:N",
+            color=alt.Color(
+                "Species:N",
+                scale=alt.Scale(
+                    domain=["Adelie", "Chinstrap", "Gentoo"],
+                    range=["#168277", "#dc925a", "#647bb1"],
+                ),
+            ),
             tooltip=list(predictions.columns),
         )
     )
@@ -155,7 +161,7 @@ with modelling:
         .mark_line(color="#999999", strokeDash=[4, 4])
         .encode(x="x:Q", y="y:Q")
     )
-    st.altair_chart((points + diagonal).properties(height=370), use_container_width=True)
+    st.altair_chart((points + diagonal).properties(height=370), width="stretch")
     st.info(
         "The dashed line indicates a perfect prediction. MAE is the average absolute error in grams; lower is better."
     )
@@ -165,7 +171,7 @@ with modelling:
     )
 
 with methods:
-    st.subheader("Small dataset. Explicit assumptions.")
+    st.subheader("Data and methods")
     st.markdown("""
 - **Source:** Palmer penguins, collected by Dr. Kristen Gorman and the Palmer Station LTER program.
 - **Snapshot:** the CSV is included in the repository; normal runs require no data download.
@@ -176,10 +182,8 @@ with methods:
 - **Reproducibility:** locked dependencies, data checksum, unit tests, CI and Docker.
 - **Limits:** small sample, clustered collection sites, only three species, no causal interpretation.
 """)
-    st.dataframe(frame.isna().sum().rename("Missing values"), use_container_width=True)
+    st.dataframe(frame.isna().sum().rename("Missing values"), width="stretch")
     st.link_button(
         "Dataset documentation & attribution", "https://allisonhorst.github.io/palmerpenguins/"
     )
-st.caption(
-    "Prepared as a personal course project draft · Review the implementation and results before submission."
-)
+st.caption("Tooling for the Data Scientist | Individual project")

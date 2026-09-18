@@ -10,7 +10,7 @@ The local file's SHA-256 is recorded in `SHA256SUMS` (paths relative to reposito
 The application reads this bundled snapshot and performs no network data access.
 
 344 observations, 8 columns: species, island, bill_length_mm, bill_depth_mm,
-flipper_length_mm, body_mass_g, sex, year. Collection years: 2007–2009.
+flipper_length_mm, body_mass_g, sex, year. Collection years: 2007 to 2009.
 Missing values are represented by `NA`; 2 rows have missing physical measurements
 and 11 have missing sex. The application preserves these in exploration.
 
